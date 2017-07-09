@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.View;
 
 /**
  * Created by johnh on 2017/5/29.
@@ -70,4 +71,15 @@ public class GameActivity extends Activity {
         // 将棋盘重置为初始状态
         mGameFragment.initGame();
     }
+
+    public void startThinking(){
+        View thinking=findViewById(R.id.thinking);
+        thinking.setVisibility(View.VISIBLE);
+    }
+
+    public void stopThinking(){
+        View thinking=findViewById(R.id.thinking);
+        thinking.setVisibility(View.GONE);
+    }
+
 }
