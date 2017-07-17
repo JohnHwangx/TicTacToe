@@ -5,6 +5,8 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -22,7 +24,9 @@ import java.util.Set;
  */
 
 public class GameFragment extends Fragment {
-    // 在这里定义数据结构……
+    private int mSoundX, mSoundO, mSoundMiss, mSoundRewind;
+    private SoundPool mSoundPool;
+    private float mVolume = 1f;
     //将数字映射到小棋盘和格子的资源id
     static private int mLargeIds[] = {R.id.large1, R.id.large2, R.id.large3,
             R.id.large4, R.id.large5, R.id.large6, R.id.large7, R.id.large8,
@@ -54,6 +58,12 @@ public class GameFragment extends Fragment {
         //在父活动因设备配置发生变化（如设备旋转）而被销毁时， Android不会销毁该片段
         setRetainInstance(true);
         initGame();
+
+        mSoundPool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
+        mSoundX = mSoundPool.load(getActivity(), R.raw.sergenious_movex, 1);
+        mSoundO = mSoundPool.load(getActivity(), R.raw.sergenious_moveo, 1);
+        mSoundMiss = mSoundPool.load(getActivity(), R.raw.erkanozan_miss, 1);
+        mSoundRewind = mSoundPool.load(getActivity(), R.raw.joanne_rewind, 1);
     }
 
     @Nullable
@@ -100,9 +110,13 @@ public class GameFragment extends Fragment {
                     @Override
                     public void onClick(View view) {
                         if (isAvailable(smallTile)) {
+                            mSoundPool.play(mSoundX, mVolume, mVolume, 1, 0, 1f);
                             makeMove(fLarge, fSmall);
-//                            switchTurns();
+                            //switchTurns();
                             think();
+                        }
+                        else{
+                            mSoundPool.play(mSoundMiss, mVolume, mVolume, 1, 0, 1f);
                         }
                     }
                 });
@@ -123,6 +137,7 @@ public class GameFragment extends Fragment {
 
                     if (move[0] != -1 && move[1] != -1) {
                         switchTurns();
+                        mSoundPool.play(mSoundO, mVolume, mVolume, 1, 0, 1f);
                         makeMove(move[0], move[1]);
                         switchTurns();
                     }
@@ -136,9 +151,7 @@ public class GameFragment extends Fragment {
      * 选择走法
      * 遍历每个棋盘格（总共81个），并使用方法isAvailable()判断是否可在该棋盘格中下棋。
      * 如果可以，就复制整个棋盘，调用方法setOwner()在该棋盘格中下棋，然后再评估棋局。在遍
-     * 历过程中，需要记录评估函数返回的最佳值及对应的走法。循环结束后，通过传入的数组返回走
-     * 法
-     *
+     * 历过程中，需要记录评估函数返回的最佳值及对应的走法。循环结束后，通过传入的数组返回走法
      * @param move
      */
     private void pickMove(int move[]) {

@@ -7,6 +7,12 @@
     android:layout_height="match_parent"
     android:clipChildren="false"
     tools:context="com.example.johnh.tictactoe.MainActivity">
+    <!--引用的不是标准Android视图 -->
+    <com.example.johnh.tictactoe.ScrollingView
+        android:id="@+id/main_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:scrollingDrawable="@drawable/xando_background"/><!--这是一个自定义属性，指定了滚动的图像-->
 
     <fragment
         android:id="@+id/main_fragment"

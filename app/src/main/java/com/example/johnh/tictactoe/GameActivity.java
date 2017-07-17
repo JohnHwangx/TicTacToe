@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
@@ -39,6 +41,11 @@ public class GameActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+        mHandler.removeCallbacks(null);
+        mMediaPlayer.stop();
+        mMediaPlayer.reset();
+        mMediaPlayer.release();
+
         String gameData = mGameFragment.getState();
         //获取一个指向首选项存储区的句柄（getPreferences），
         // 为首选项创建一个编辑器（edit），
@@ -57,6 +64,12 @@ public class GameActivity extends Activity {
 
     public void reportWinner(final Tile.Owner winner){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+            mMediaPlayer.stop();
+            mMediaPlayer.reset();
+            mMediaPlayer.release();
+        }
         builder.setMessage(getString(R.string.declare_winner, winner));
         builder.setCancelable(false);
         builder.setPositiveButton(R.string.ok_label,
@@ -67,7 +80,20 @@ public class GameActivity extends Activity {
                     }
                 });
         final Dialog dialog = builder.create();
-        dialog.show();
+//        dialog.show();
+
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mMediaPlayer = MediaPlayer.create(GameActivity.this,
+                        winner == Tile.Owner.X ? R.raw.oldedgar_winner
+                                : winner == Tile.Owner.O ? R.raw.notr_loser
+                                : R.raw.department64_draw
+                );
+                mMediaPlayer.start();
+                dialog.show();
+            }
+        }, 500);
         // 将棋盘重置为初始状态
         mGameFragment.initGame();
     }
@@ -81,5 +107,14 @@ public class GameActivity extends Activity {
         View thinking=findViewById(R.id.thinking);
         thinking.setVisibility(View.GONE);
     }
+    private MediaPlayer mMediaPlayer;
+    private Handler mHandler;
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mMediaPlayer = MediaPlayer.create(this,R.raw.frankum_loop001e);
+        mMediaPlayer.setLooping(true);
+        mMediaPlayer.start();
+    }
 }
